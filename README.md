@@ -1,27 +1,13 @@
 # Picture Shop 2
 
-I've been having too much fun with `PictureBox` lately. [How to save multiple overlapping PictureBoxes?](https://stackoverflow.com/a/77502322/5438626) 
-
-For your question, the strategy would be similar: Draw the image into 
-`PictureBox` then similar to the code in that answer you would replace pixels that fall within a certain tolerance with a transparent pixel. 
+For purposes of demo, suppose the source image `RawImage` is a JPG and therefore a little bit ratty. And we're going to preview a transparency modification using a `PictureBox`. So to swap out the pixels, the code is this:
 
 ```
-pictureBox.Paint += (sender, e) =>
+void paintImageWithTransparency(Bitmap rawImage, Rectangle rectangle, Graphics graphics)
 {
-    Bitmap bmp;
-    for (int i = 0; i < Layers.Count; i++)
-    {
-        switch (i)
-        {
-            case 0:
-                bmp = Layers[i];
-                bmp = localReplaceColor(Layers[i], PickedColor, trackBarTolerance.Value);
-                break;
-            default:
-                return;
-        }
-        e.Graphics.DrawImage(bmp, pictureBox.ClientRectangle);
-    }
+    Bitmap bmp = localReplaceColor(rawImage, PickedColor, trackBarTolerance.Value);
+    graphics.DrawImage(bmp, rectangle);
+
     Bitmap localReplaceColor(Bitmap bmp, Color targetColor, int tolerance)
     {
         if (tolerance == 0) return bmp;
@@ -45,10 +31,26 @@ pictureBox.Paint += (sender, e) =>
         }
         return copy;
     }
+}
+```
+
+This goes in the `PictureBox` paint event handler.
+
+```
+pictureBox.Paint += (sender, e) =>
+{
+    if (sender is Control control)
+    {
+        paintImageWithTransparency(RawImage, control.ClientRectangle, e.Graphics);
+    }
 };
 ```
 
-To save it, draw the `PictureBox` to a bitmap and save it something like this:
+[![screenshot][1]][1]
+
+---
+
+Now we want to `Save` it, but drawing on the canvas isn't the same as setting the `Image` property (which is `null` in fact). Most other ways of saving the transparent image we're seeing in the `PictureBox` end in a non-transparent background. The way we're going to get around this is, once we preview the transparency in the picture box, is to use the identical code to make an ad-hoc Bitmap and save _that_ Bitmap without interacting with the `pictureBox`.
 
 ```
 buttonSave.Click += (sender, e) =>
@@ -56,11 +58,20 @@ buttonSave.Click += (sender, e) =>
     var fileName = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.MyPictures),
         "TransparentImage.png");
-    using (var bmp = new Bitmap(pictureBox.Width, pictureBox.Height))
+
+    Bitmap bmpToSave = new Bitmap(pictureBox.Width, pictureBox.Height);
+    using (Graphics graphics = Graphics.FromImage(bmpToSave))
     {
-        pictureBox.DrawToBitmap(bmp, pictureBox.ClientRectangle);
-        bmp.Save(fileName, ImageFormat.Png);
+        paintImageWithTransparency(RawImage, pictureBox.ClientRectangle, graphics);
     }
+    bmpToSave.Save(fileName, ImageFormat.Png);
+
     Process.Start("mspaint.exe", fileName);
 };
 ```
+
+Here it is rendered in Windows 11 MS Paint.
+
+[![transparent image][2]][2]
+
+___

@@ -73,7 +73,7 @@
             trackBarTolerance.Name = "trackBarTolerance";
             trackBarTolerance.Size = new Size(394, 34);
             trackBarTolerance.TabIndex = 2;
-            trackBarTolerance.Value = 50;
+            trackBarTolerance.Value = 12;
             trackBarTolerance.Visible = false;
             // 
             // labelTolerance

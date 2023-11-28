@@ -8,6 +8,7 @@ namespace picture_shop
 {
     public partial class MainForm : Form
     {
+        Bitmap RawImage { get; set; }
         public MainForm()
         {
             InitializeComponent(); 
@@ -16,47 +17,42 @@ namespace picture_shop
                 AppDomain.CurrentDomain.BaseDirectory,
                 "Images"
             );
+            RawImage = (Bitmap)Bitmap.FromFile(Path.Combine(ImageFolder, "Image1.jpg"));
+            pictureBox.BackColor = Color.Black;
+
+            bool drawFauxTransparentBackground = true;
+            if(drawFauxTransparentBackground)
+            {
+                pictureBox.BackgroundImage = null;
+            }
             buttonSave.Click += (sender, e) =>
             {
                 var fileName = Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.MyPictures),
                     "TransparentImage.png");
-                using (var bmp = new Bitmap(pictureBox.Width, pictureBox.Height))
-                {
-                    var background = pictureBox.BackgroundImage;
-                    var image = pictureBox.Image;
-                    pictureBox.BackgroundImage = null; 
-                    pictureBox.Image = null;
 
-                    pictureBox.DrawToBitmap(bmp, pictureBox.ClientRectangle);
-                    bmp.Save(fileName, ImageFormat.Png);
+                Bitmap bmpToSave = new Bitmap(pictureBox.Width, pictureBox.Height);
+                using (Graphics graphics = Graphics.FromImage(bmpToSave))
+                {
+                    paintImageWithTransparency(RawImage, pictureBox.ClientRectangle, graphics);
                 }
+                bmpToSave.Save(fileName, ImageFormat.Png);
+
                 Process.Start("mspaint.exe", fileName);
             };
             pictureBox.Paint += (sender, e) =>
             {
                 if (sender is Control control)
                 {
-                    paintImageWithTransparency(control, e.Graphics);
+                    paintImageWithTransparency(RawImage, control.ClientRectangle, e.Graphics);
                 }
             };
 
-            void paintImageWithTransparency(Control control, Graphics graphics)
+            void paintImageWithTransparency(Bitmap rawImage, Rectangle rectangle, Graphics graphics)
             {
-                Bitmap bmp;
-                for (int i = 0; i < Layers.Count; i++)
-                {
-                    switch (i)
-                    {
-                        case 0:
-                            bmp = Layers[i];
-                            bmp = localReplaceColor(Layers[i], PickedColor, trackBarTolerance.Value);
-                            break;
-                        default:
-                            return;
-                    }
-                    graphics.DrawImage(bmp, control.ClientRectangle);
-                }
+                Bitmap bmp = localReplaceColor(rawImage, PickedColor, trackBarTolerance.Value);
+                graphics.DrawImage(bmp, rectangle);
+
                 Bitmap localReplaceColor(Bitmap bmp, Color targetColor, int tolerance)
                 {
                     if (tolerance == 0) return bmp;
@@ -170,13 +166,9 @@ namespace picture_shop
                 BackColor = PickedColor,
             };
             pictureBoxWheel.Controls.Add(labelPickedColor);
-        }
-        protected override void OnLoad(EventArgs e)
-        {
-            base.OnLoad(e);
-            Layers.Add((Bitmap)Bitmap.FromFile(Path.Combine(ImageFolder, "Image1.png")));
             labelTolerance.Visible = trackBarTolerance.Visible = true;
         }
+
         Label labelPickedColor;
         public Color PickedColor
         {
@@ -203,7 +195,5 @@ namespace picture_shop
                 Environment.SpecialFolder.LocalApplicationData),
                 Assembly.GetExecutingAssembly().GetName().Name,
                 "Images");
-
-        private List<Bitmap> Layers { get; } = new List<Bitmap>();
     }
 }

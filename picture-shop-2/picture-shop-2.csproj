@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <Folder Include="Images\" />
+    <Folder Include="Screenshots\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -29,6 +30,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Images\Image1.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Images\Image1.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
