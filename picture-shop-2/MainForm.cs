@@ -35,7 +35,10 @@ namespace picture_shop
             };
             pictureBox.Paint += (sender, e) =>
             {
-                paintImageWithTransparency((Control)sender, e.Graphics);
+                if (sender is Control control)
+                {
+                    paintImageWithTransparency(control, e.Graphics);
+                }
             };
 
             void paintImageWithTransparency(Control control, Graphics graphics)
