@@ -16,8 +16,6 @@ namespace picture_shop
                 AppDomain.CurrentDomain.BaseDirectory,
                 "Images"
             );
-
-            pictureBox.Image = new Bitmap(pictureBox.Width, pictureBox.Height);
             buttonSave.Click += (sender, e) =>
             {
                 var fileName = Path.Combine(
@@ -37,46 +35,50 @@ namespace picture_shop
             };
             pictureBox.Paint += (sender, e) =>
             {
-                if (pictureBox.Image is Bitmap bmp)
+                paintImageWithTransparency((Control)sender, e.Graphics);
+            };
+
+            void paintImageWithTransparency(Control control, Graphics graphics)
+            {
+                Bitmap bmp;
+                for (int i = 0; i < Layers.Count; i++)
                 {
-                    for (int i = 0; i < Layers.Count; i++)
+                    switch (i)
                     {
-                        switch (i)
-                        {
-                            case 0:
-                                bmp = Layers[i];
-                                bmp = localReplaceColor(Layers[i], PickedColor, trackBarTolerance.Value);
-                                break;
-                            default:
-                                return;
-                        }
-                        e.Graphics.DrawImage(bmp, pictureBox.ClientRectangle);
+                        case 0:
+                            bmp = Layers[i];
+                            bmp = localReplaceColor(Layers[i], PickedColor, trackBarTolerance.Value);
+                            break;
+                        default:
+                            return;
                     }
-                    Bitmap localReplaceColor(Bitmap bmp, Color targetColor, int tolerance)
+                    graphics.DrawImage(bmp, control.ClientRectangle);
+                }
+                Bitmap localReplaceColor(Bitmap bmp, Color targetColor, int tolerance)
+                {
+                    if (tolerance == 0) return bmp;
+                    var copy = new Bitmap(bmp);
+                    for (int x = 0; x < bmp.Width; x++)
                     {
-                        if (tolerance == 0) return bmp;
-                        var copy = new Bitmap(bmp);
-                        for (int x = 0; x < bmp.Width; x++)
+                        for (int y = 0; y < copy.Height; y++)
                         {
-                            for (int y = 0; y < copy.Height; y++)
+                            Color pixelColor = copy.GetPixel(x, y);
+                            if (localIsWithinTolerance(pixelColor, targetColor, tolerance))
                             {
-                                Color pixelColor = copy.GetPixel(x, y);
-                                if (localIsWithinTolerance(pixelColor, targetColor, tolerance))
-                                {
-                                    copy.SetPixel(x, y, Color.Transparent);
-                                }
+                                copy.SetPixel(x, y, Color.Transparent);
                             }
                         }
-                        bool localIsWithinTolerance(Color pixelColor, Color targetColor, int tolerance)
-                        {
-                            return Math.Abs(pixelColor.R - targetColor.R) <= tolerance &&
-                                    Math.Abs(pixelColor.G - targetColor.G) <= tolerance &&
-                                    Math.Abs(pixelColor.B - targetColor.B) <= tolerance;
-                        }
-                        return copy;
                     }
+                    bool localIsWithinTolerance(Color pixelColor, Color targetColor, int tolerance)
+                    {
+                        return Math.Abs(pixelColor.R - targetColor.R) <= tolerance &&
+                                Math.Abs(pixelColor.G - targetColor.G) <= tolerance &&
+                                Math.Abs(pixelColor.B - targetColor.B) <= tolerance;
+                    }
+                    return copy;
                 }
-            };
+            }
+
             trackBarTolerance.ValueChanged += (sender, e) => pictureBox.Refresh();
             pictureBoxWheel.Paint += (sender, e) =>
             {
