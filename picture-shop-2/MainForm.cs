@@ -81,9 +81,10 @@ namespace picture_shop
             trackBarTolerance.ValueChanged += (sender, e) => pictureBox.Refresh();
             pictureBoxWheel.Paint += (sender, e) =>
             {
-                int diameter = Math.Min(pictureBoxWheel.Width, pictureBoxWheel.Height);
+                int margin = 10; // Adjust the margin as necessary
+                int diameter = Math.Min(pictureBoxWheel.Width, pictureBoxWheel.Height) - margin;
                 PointF center = new PointF(diameter / 2, diameter / 2);
-                Bitmap bmp = new Bitmap(diameter, diameter);
+                Bitmap bmp = new Bitmap(diameter, diameter, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
 
                 for (int x = 0; x < diameter; x++)
                 {
@@ -91,7 +92,7 @@ namespace picture_shop
                     {
                         double angle = Math.Atan2(y - center.Y, x - center.X) * 180.0 / Math.PI;
                         angle = (angle < 0) ? angle + 360 : angle;
-                        float distance = localDistance(new PointF(x, y), center);
+                        float distance = localDistance(new PointF(x, y), center) * 1.2f;
                         if (distance <= center.X)
                         {
                             double saturation = distance / center.X;
