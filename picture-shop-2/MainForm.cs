@@ -28,8 +28,10 @@ namespace picture_shop
             buttonSave.Click += (sender, e) =>
             {
                 var fileName = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.MyPictures),
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    Assembly.GetEntryAssembly().GetName().Name,
                     "TransparentImage.png");
+                Directory.CreateDirectory(Path.GetDirectoryName(fileName));
 
                 Bitmap bmpToSave = new Bitmap(pictureBox.Width, pictureBox.Height);
                 using (Graphics graphics = Graphics.FromImage(bmpToSave))
@@ -39,6 +41,7 @@ namespace picture_shop
                 bmpToSave.Save(fileName, ImageFormat.Png);
 
                 Process.Start("mspaint.exe", fileName);
+                // Process.Start("explorer.exe", Path.GetDirectoryName(fileName));
             };
             pictureBox.Paint += (sender, e) =>
             {
