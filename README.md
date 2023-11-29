@@ -76,9 +76,6 @@ Here it is rendered in Windows 11 MS Paint.
 
 ___
 
-If you like, you can experiment with the [Full Code](https://github.com/IVSoftware/picture-shop-2.git). I added a color wheel and you can set the trasparent color by clicking or dragging on it.
-
-
 
 
   [1]: https://i.stack.imgur.com/0fnNt.png
