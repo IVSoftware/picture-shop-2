@@ -75,3 +75,11 @@ Here it is rendered in Windows 11 MS Paint.
 [![transparent image][2]][2]
 
 ___
+
+If you like, you can experiment with the [Full Code](https://github.com/IVSoftware/picture-shop-2.git). I added a color wheel and you can set the trasparent color by clicking or dragging on it.
+
+
+
+
+  [1]: https://i.stack.imgur.com/0fnNt.png
+  [2]: https://i.stack.imgur.com/fwmQb.png
